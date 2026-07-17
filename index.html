@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LiteRT Mocap — browser motion capture</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2242%22 fill=%22%232dd4bf%22/></svg>" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header id="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>LiteRT&nbsp;Mocap</h1>
+        <span class="sub">on-device pose&nbsp;→&nbsp;3D rig</span>
+      </div>
+
+      <div class="controls">
+        <label class="control">
+          <span>Backend</span>
+          <select id="backend-select" disabled>
+            <option value="webgpu">WebGPU</option>
+            <option value="wasm">CPU (Wasm)</option>
+          </select>
+        </label>
+
+        <label class="control">
+          <span>Character</span>
+          <select id="character-select" disabled></select>
+        </label>
+
+        <label class="control toggle">
+          <span>Mirror</span>
+          <input type="checkbox" id="mirror-toggle" checked />
+        </label>
+
+        <button id="record-btn" disabled>● Record</button>
+        <button id="export-json-btn" disabled>Export JSON</button>
+        <button id="export-bvh-btn" disabled>Export BVH</button>
+      </div>
+    </header>
+
+    <main id="stage">
+      <!-- Left: webcam + landmark overlay -->
+      <section class="panel" id="video-panel">
+        <div class="panel-label">CAMERA · POSE INPUT</div>
+        <div id="video-wrap">
+          <video id="video" autoplay playsinline muted></video>
+          <canvas id="overlay"></canvas>
+        </div>
+      </section>
+
+      <!-- Right: retargeted 3D character -->
+      <section class="panel" id="scene-panel">
+        <div class="panel-label">THREE.JS · RETARGETED RIG</div>
+        <div id="scene-wrap"></div>
+        <div id="hud">
+          <div class="hud-row"><span class="hud-key">FPS</span><span class="hud-val" id="hud-fps">–</span></div>
+          <div class="hud-row"><span class="hud-key">INFER</span><span class="hud-val" id="hud-infer">–</span></div>
+          <div class="hud-row"><span class="hud-key">BACKEND</span><span class="hud-val" id="hud-backend">–</span></div>
+          <div class="hud-row"><span class="hud-key">TRACK</span><span class="hud-val hud-val-sm" id="hud-track">–</span></div>
+        </div>
+        <div id="rec-badge" class="hidden">● REC <span id="rec-frames">0</span></div>
+      </section>
+    </main>
+
+    <!-- Full-screen status layer: loading progress + error states -->
+    <div id="status-layer">
+      <div id="status-card">
+        <div id="status-spinner"></div>
+        <div id="status-title">Starting…</div>
+        <div id="status-detail"></div>
+        <div id="status-progress"><div id="status-progress-fill"></div></div>
+      </div>
+    </div>
+
+    <div id="toast" class="hidden"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

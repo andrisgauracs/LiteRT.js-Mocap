@@ -1,0 +1,247 @@
+/* ---------------------------------------------------------------------------
+   Dark, minimal, screen-recording-friendly UI.
+   Palette: near-black background, one cyan accent, high-contrast mono HUD.
+--------------------------------------------------------------------------- */
+:root {
+  --bg: #0b0e13;
+  --panel: #11151c;
+  --panel-edge: #1d2430;
+  --text: #e6edf3;
+  --text-dim: #8b98a9;
+  --accent: #2dd4bf;
+  --accent-dim: #14453f;
+  --danger: #f87171;
+  --mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "Inter", "Segoe UI", system-ui, sans-serif;
+  overflow: hidden;
+}
+
+body { display: flex; flex-direction: column; }
+
+/* ---- Top bar ---- */
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--panel-edge);
+  flex: none;
+}
+
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent);
+  align-self: center;
+  box-shadow: 0 0 12px var(--accent);
+}
+.brand h1 { font-size: 17px; font-weight: 650; letter-spacing: 0.2px; }
+.brand .sub { font-size: 12px; color: var(--text-dim); }
+
+.controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.control { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-dim); }
+.control.toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+
+select {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--panel-edge);
+  border-radius: 7px;
+  padding: 7px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+select:focus { outline: 1px solid var(--accent); }
+select:disabled { opacity: 0.45; cursor: default; }
+
+button {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--panel-edge);
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: 0.45; cursor: default; }
+button.recording {
+  background: #3b1219;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ---- Main split stage ---- */
+#stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 14px 20px 20px;
+  min-height: 0;
+}
+
+.panel {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.panel-label {
+  position: absolute;
+  top: 10px; left: 12px;
+  z-index: 5;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  background: rgba(11, 14, 19, 0.72);
+  padding: 4px 8px;
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+#video-wrap { position: absolute; inset: 0; }
+
+#video, #overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Mirror the webcam like a real mirror — toggled from JS via .mirrored */
+#video.mirrored, #overlay.mirrored { transform: scaleX(-1); }
+
+#scene-wrap { position: absolute; inset: 0; }
+#scene-wrap canvas { display: block; }
+
+/* ---- Performance HUD (big + legible for screen recording) ---- */
+#hud {
+  position: absolute;
+  top: 10px; right: 12px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(11, 14, 19, 0.78);
+  border: 1px solid var(--panel-edge);
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-family: var(--mono);
+  min-width: 168px;
+}
+.hud-row { display: flex; justify-content: space-between; gap: 14px; align-items: baseline; }
+.hud-key { font-size: 10px; letter-spacing: 1.4px; color: var(--text-dim); }
+.hud-val { font-size: 18px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+.hud-val-sm { font-size: 13px; letter-spacing: 0.5px; }
+
+#rec-badge {
+  position: absolute;
+  bottom: 12px; right: 12px;
+  z-index: 5;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--danger);
+  background: rgba(11, 14, 19, 0.78);
+  border: 1px solid #3b1219;
+  padding: 6px 10px;
+  border-radius: 7px;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse { 50% { opacity: 0.55; } }
+
+/* ---- Status / loading / error layer ---- */
+#status-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 14, 19, 0.88);
+  backdrop-filter: blur(6px);
+  transition: opacity 0.3s;
+}
+#status-layer.hidden { opacity: 0; pointer-events: none; }
+
+#status-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 16px;
+  padding: 34px 44px;
+  max-width: 460px;
+  text-align: center;
+}
+#status-spinner {
+  width: 26px; height: 26px;
+  border: 3px solid var(--accent-dim);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#status-card.error #status-spinner { display: none; }
+#status-card.error #status-title { color: var(--danger); }
+
+#status-title { font-size: 16px; font-weight: 650; }
+#status-detail { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+#status-progress {
+  width: 260px; height: 5px;
+  background: var(--panel-edge);
+  border-radius: 3px;
+  overflow: hidden;
+}
+#status-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.15s;
+}
+#status-card.error #status-progress { display: none; }
+
+/* ---- Toast (transient messages, e.g. fallback notices) ---- */
+#toast {
+  position: fixed;
+  bottom: 26px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  padding: 11px 18px;
+  border-radius: 9px;
+  font-size: 13px;
+  max-width: 70vw;
+  transition: opacity 0.3s;
+}
+#toast.hidden { opacity: 0; pointer-events: none; }
+
+.hidden { display: none !important; }
+#status-layer.hidden { display: flex !important; }
+#toast.hidden { display: block !important; }
+
+@media (max-width: 900px) {
+  #stage { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+}

@@ -1,0 +1,4 @@
+node_modules/
+dist/
+public/litert-wasm/
+.DS_Store

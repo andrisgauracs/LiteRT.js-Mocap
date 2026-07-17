@@ -1,0 +1,21 @@
+{
+  "name": "litert-mocap",
+  "version": "1.0.0",
+  "description": "Browser-based motion capture: LiteRT.js pose detection driving a Three.js character",
+  "type": "module",
+  "scripts": {
+    "setup-wasm": "node scripts/copy-wasm.mjs",
+    "predev": "npm run setup-wasm",
+    "prebuild": "npm run setup-wasm",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@litertjs/core": "^2.5.2",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "vite": "^8.1.4"
+  }
+}
