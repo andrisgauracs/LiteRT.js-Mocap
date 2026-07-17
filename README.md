@@ -1,5 +1,7 @@
 # LiteRT Mocap — browser-based motion capture
 
+<img width="500" height="281" alt="mocap" src="https://github.com/user-attachments/assets/6701be40-bea1-465b-a538-068c2a1cf49e" />
+
 Real-time human pose estimation running **entirely in the browser** with
 [LiteRT.js](https://developers.google.com/edge/litert/web) (Google's on-device
 AI runtime), driving a rigged 3D character in
